@@ -119,7 +119,7 @@ function updateUser(req, res) {
         });
     }
 
-    User.findOneAndUpdate(userId, updateData, {new: true}, (err, userUpdated) => {
+    User.findByIdAndUpdate(userId, updateData, {new: true}, (err, userUpdated) => {
         if (err) {
             res.status(500).send({
                 message: 'Error al actualizar el usuario'
@@ -138,9 +138,103 @@ function updateUser(req, res) {
     });
 }
 
+function deleteUser(req, res) {
+    var userId = req.params.id;
+
+    User.findByIdAndRemove(userId, (err, userRemoved) => {
+        if (err) {
+            res.status(500).send({
+                message: 'Error en la peticion'
+            });
+        } else {
+            if (!userRemoved) {
+                res.status(404).send({
+                    message: 'No se ha borrado el usuario'
+                });
+            } else {
+                res.status(200).send({
+                    message: `El usuario ${userRemoved.email} se ha eliminado exitosamente`
+                });
+            }
+        }
+    });
+
+}
+
+function setAdminRole(req, res) {
+    var userId = req.params.id;
+
+    User.findByIdAndUpdate(userId, {role: 'ROLE_ADMIN'}, {new: true}, (err, userUpdated) => {
+        if(err) {
+            res.status(500).send({
+                message: 'Usuario no encontrado'
+            });
+        } else {
+            if (!userUpdated) {
+                res.status(404).send({
+                    message: 'No se ha podido actualizar el usario'
+                });
+            } else {
+                res.status(200).send({
+                    user: userUpdated
+                });
+            }
+        }
+    });
+}
+
+function changePassword(req, res) {
+    var params = req.body;
+    if (params.email && params.password) {
+        var userEmail = params.email.toLowerCase();
+        var password = params.password;
+        User.findOne({email: userEmail}, (err, issetUser) => {
+            if (err) {
+                res.status(500).send({
+                    message: 'Error en el servidor'
+                });
+            } else {
+                if (issetUser) {
+                    bcrypt.hash(password, null, null, (err, hash) => {
+                        var newPassword = hash;
+                        User.findByIdAndUpdate(issetUser.id, {password: newPassword}, {new: true}, (err, userUpdated) => {
+                            if (err) {
+                                res.status(500).send({
+                                    message: 'Error en el servidor'
+                                });
+                            } else {
+                                if (!userUpdated) {
+                                    res.status(404).send({
+                                        message: 'No se ha modificado el password'
+                                    });
+                                } else {
+                                    res.status(200).send({
+                                        message: 'password modificado exitosamente'
+                                    });
+                                }
+                            }
+                        })
+                    })
+                } else {
+                    res.status(200).send({
+                        message: 'El no existe registrese primero'
+                    });
+                }
+            }
+        })
+    } else {
+        res.status(200).send({
+            message: 'Parametros erroneos'
+        });
+    }
+}
+
 module.exports = {
     prueba,
     register,
     login,
-    updateUser   
+    updateUser,
+    deleteUser,
+    setAdminRole,
+    changePassword  
 }
