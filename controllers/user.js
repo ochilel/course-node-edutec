@@ -108,8 +108,39 @@ function login(req, res) {
     });
 }
 
+function updateUser(req, res) {
+    var userId = req.params.id;
+    var updateData = req.body;
+    delete updateData.password;
+
+    if (userId != req.user.sub) {
+        return res.status(401).send({
+            message: 'No tiene permiso para modificar este usuario.'
+        });
+    }
+
+    User.findOneAndUpdate(userId, updateData, {new: true}, (err, userUpdated) => {
+        if (err) {
+            res.status(500).send({
+                message: 'Error al actualizar el usuario'
+            });
+        } else {
+            if (!userUpdated) {
+                res.status(404).send({
+                    message: 'No se ha podido actualizar el usuario'
+                });
+            } else {
+                res.status(200).send({
+                    user: userUpdated
+                });
+            }
+        }
+    });
+}
+
 module.exports = {
     prueba,
     register,
-    login
+    login,
+    updateUser   
 }
