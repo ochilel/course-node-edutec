@@ -5,14 +5,9 @@ var bcrypt = require('bcrypt-nodejs');
 var jwt = require('../services/jwt');
 var fs = require('fs');
 var path = require('path');
+var constants = require('../utils/constants').constants;
 
 var User = require('../models/user');
-
-function prueba(req, res) {
-    res.status(200).send({
-        message: 'Probando el controlador de usuario'
-    })
-}
 
 function register(req, res) {
     var user = new User();
@@ -29,7 +24,7 @@ function register(req, res) {
         User.findOne({email: user.email.toLowerCase()}, (err, issetUser) => {
             if (err) {
                 res.status(500).send({
-                    message: 'Error en el servidor'
+                    message: constants.ERROR_IN_REQUEST
                 });
             } else {
                 if (!issetUser) {
@@ -39,16 +34,16 @@ function register(req, res) {
                         user.save((err, userStored) => {
                             if (err) {
                                 res.status(500).send({
-                                    message: 'Error al guardar usuario'
+                                    message: constants.ERROR_IN_SAVE_USER
                                 });
                             } else {
                                 if (!userStored) {
                                     res.status(404).send({
-                                        message: 'No se ha registrado el usuario'
+                                        message: constants.USER_NOT_REGISTER
                                     });
                                 } else {
                                     res.status(200).send({
-                                        message: 'usuario guardado exitosamente',
+                                        message: constants.USER_SUCCESS_STORED,
                                         user: userStored
                                     });
                                 }
@@ -57,14 +52,14 @@ function register(req, res) {
                     })
                 } else {
                     res.status(200).send({
-                        message: 'El usuario no se pudo registrar'
+                        message: constants.USER_NOT_REGISTER
                     });
                 }
             }
         })
     } else {
         res.status(200).send({
-            message: 'Parametros erroneos'
+            message: constants.WRONG_PARAMETERS
         });
     }
 }
@@ -78,7 +73,7 @@ function login(req, res) {
     User.findOne({email: email.toLowerCase()}, (err, issetUser) => {
         if (err) {
             res.status(500).send({
-                message: 'Error al buscar su usuario'
+                message: constants.ERROR_IN_REQUEST
             });
         } else {
             if (issetUser) {
@@ -95,13 +90,13 @@ function login(req, res) {
                         }
                     } else {
                         res.status(200).send({
-                            message: 'El usuario no se ha logueado correctamente'
+                            message: constants.LOGIN_FAILED
                         });
                     }
                 })
             } else {
                 res.status(404).send({
-                    message: 'El usuario no ha podido loguearse'
+                    message: constants.LOGIN_FAILED
                 });
             }
         }
@@ -115,19 +110,19 @@ function updateUser(req, res) {
 
     if (userId != req.user.sub) {
         return res.status(401).send({
-            message: 'No tiene permiso para modificar este usuario.'
+            message: constants.UPDATE_USER_NOT_ALLOWED
         });
     }
 
     User.findByIdAndUpdate(userId, updateData, {new: true}, (err, userUpdated) => {
         if (err) {
             res.status(500).send({
-                message: 'Error al actualizar el usuario'
+                message: constants.ERROR_IN_REQUEST
             });
         } else {
             if (!userUpdated) {
                 res.status(404).send({
-                    message: 'No se ha podido actualizar el usuario'
+                    message: constants.USER_NOT_UPDATED
                 });
             } else {
                 res.status(200).send({
@@ -144,12 +139,12 @@ function deleteUser(req, res) {
     User.findByIdAndRemove(userId, (err, userRemoved) => {
         if (err) {
             res.status(500).send({
-                message: 'Error en la peticion'
+                message: constants.ERROR_IN_REQUEST
             });
         } else {
             if (!userRemoved) {
                 res.status(404).send({
-                    message: 'No se ha borrado el usuario'
+                    message: constants.USER_NOT_DELETED
                 });
             } else {
                 res.status(200).send({
@@ -167,12 +162,12 @@ function setAdminRole(req, res) {
     User.findByIdAndUpdate(userId, {role: 'ROLE_ADMIN'}, {new: true}, (err, userUpdated) => {
         if(err) {
             res.status(500).send({
-                message: 'Usuario no encontrado'
+                message: constants.ERROR_IN_REQUEST
             });
         } else {
             if (!userUpdated) {
                 res.status(404).send({
-                    message: 'No se ha podido actualizar el usario'
+                    message: constants.USER_NOT_UPDATED
                 });
             } else {
                 res.status(200).send({
@@ -191,7 +186,7 @@ function changePassword(req, res) {
         User.findOne({email: userEmail}, (err, issetUser) => {
             if (err) {
                 res.status(500).send({
-                    message: 'Error en el servidor'
+                    message: constants.ERROR_IN_REQUEST
                 });
             } else {
                 if (issetUser) {
@@ -200,16 +195,16 @@ function changePassword(req, res) {
                         User.findByIdAndUpdate(issetUser.id, {password: newPassword}, {new: true}, (err, userUpdated) => {
                             if (err) {
                                 res.status(500).send({
-                                    message: 'Error en el servidor'
+                                    message: constants.ERROR_IN_REQUEST
                                 });
                             } else {
                                 if (!userUpdated) {
                                     res.status(404).send({
-                                        message: 'No se ha modificado el password'
+                                        message: constants.PASSWORD_NOT_UPDATED
                                     });
                                 } else {
                                     res.status(200).send({
-                                        message: 'password modificado exitosamente'
+                                        message: constants.PASSWORD_UPDATED_SUCCESFULLY
                                     });
                                 }
                             }
@@ -217,20 +212,19 @@ function changePassword(req, res) {
                     })
                 } else {
                     res.status(200).send({
-                        message: 'El no existe registrese primero'
+                        message: constants.USER_NOT_EXISTS
                     });
                 }
             }
         })
     } else {
         res.status(200).send({
-            message: 'Parametros erroneos'
+            message: constants.WRONG_PARAMETERS
         });
     }
 }
 
 module.exports = {
-    prueba,
     register,
     login,
     updateUser,

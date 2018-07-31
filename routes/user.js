@@ -7,7 +7,6 @@ var md_admin = require('../middlewares/is_admin');
 
 var api = express.Router();
 
-api.get('/prueba', [md_auth.ensureAuth, md_admin.isAdmin], UserController.prueba);
 api.post('/register', UserController.register);
 api.post('/login', UserController.login);
 api.put('/update-user/:id', md_auth.ensureAuth, UserController.updateUser);

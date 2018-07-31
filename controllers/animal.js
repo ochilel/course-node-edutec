@@ -3,13 +3,28 @@
 // modulos
 var fs = require('fs');
 var path = require('path');
+var constants = require('../utils/constants').constants;
 
 var Animal = require('../models/animal');
 
 function getAnimals(req, res) {
-    res.status(200).send({
-        message: 'Probando el controlador de animales'
-    })
+    Animal.find({}).exec((err, animals) => {
+        if (err) {
+            res.status(500).send({
+                message: constants.ERROR_IN_REQUEST
+            });
+        } else {
+            if (!animals) {
+                res.status(404).send({
+                    message: constants.EMPTY_ANIMALS
+                });
+            } else {
+                res.status(200).send({
+                    animals
+                });
+            }
+        }
+    });
 }
 
 function getAnimal(req, res) {
@@ -18,12 +33,12 @@ function getAnimal(req, res) {
     Animal.findById(animalId).exec((err, animal) => {
         if (err) {
             res.status(500).send({
-                message: 'Error en la peticion'
+                message: constants.ERROR_IN_REQUEST
             });
         } else {
             if (!animal) {
                 res.status(404).send({
-                    message: 'Animal no existe'
+                    message: constants.ANIMAL_NOT_EXISTS
                 });
             } else {
                 res.status(200).send({
@@ -48,12 +63,12 @@ function saveAnimal(req, res) {
         animal.save((err, animalStored) => {
             if (err) {
                 res.status(500).send({
-                    message: 'Error en el servidor'
+                    message: constants.ERROR_IN_REQUEST
                 });
             } else {
                 if (!animalStored) {
                     res.status(404).send({
-                        message: 'No se ha guardado el animal'
+                        message: constants.ANIMAL_NOT_SAVED
                     });
                 } else {
                     res.status(200).send({
@@ -64,7 +79,7 @@ function saveAnimal(req, res) {
         });
     } else {
         res.status(200).send({
-            message: 'El nombre del animal es obligatorio'
+            message: constants.ANIMAL_NAME_IS_REQUIRED
         });
     }
 }
@@ -76,12 +91,12 @@ function updateAnimal(req, res) {
     Animal.findByIdAndUpdate(animalId, update, {new: true}, (err, animalUpdated) => {
         if (err) {
             res.status(500).send({
-                message: 'Error en la peticion'
+                message: constants.ERROR_IN_REQUEST
             });
         } else {
             if (!animalUpdated) {
                 res.status(404).send({
-                    message: 'No se ha actualizado el animal'
+                    message: constants.ANIMAL_NOT_UPDATED
                 });
             } else {
                 res.status(200).send({
@@ -98,12 +113,12 @@ function deleteAnimal(req, res) {
     Animal.findByIdAndRemove(animalId, (err, animalRemoved) => {
         if (err) {
             res.status(500).send({
-                message: 'Error en la peticion'
+                message: constants.ERROR_IN_REQUEST
             });
         } else {
             if (!animalRemoved) {
                 res.status(404).send({
-                    message: 'No se a encontrado el animal'
+                    message: constants.ANIMAL_NOT_FOUND
                 });
             } else {
                 res.status(200).send({
@@ -131,12 +146,12 @@ function uploadImage(req, res) {
             Animal.findByIdAndUpdate(animalId, {image: file_name}, {new: true}, (err, animalUpdated) => {
                 if (err) {
                     res.status(500).send({
-                        message: 'Error al actualizar el animal'
+                        message: constants.ERROR_IN_REQUEST
                     });
                 } else {
                     if (!animalUpdated) {
                         res.status(404).send({
-                            message: 'No se ha actualizado el animal'
+                            message: constants.ANIMAL_NOT_UPDATED
                         });
                     } else {
                         res.status(200).send({
@@ -150,18 +165,18 @@ function uploadImage(req, res) {
             fs.unlink(file_path, (err) => {
                 if (err) {
                     res.status(200).send({
-                        message: 'Extension del archivo no valida y no encontrada'
+                        message: constants.IMAGE_EXTENSION_NOT_VALID
                     });
                 } else {
                     res.status(200).send({
-                        message: 'Extension del archivo no valida'
+                        message: constants.IMAGE_EXTENSION_NOT_VALID
                     });
                 }
             });
         }
     } else {
         res.status(200).send({
-            message: 'No se ha subido ningun archivo'
+            message: constants.REQUIRED_FILE
         });
     }
 }

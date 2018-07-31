@@ -15,10 +15,4 @@ app.use(bodyParser.json());
 app.use('/api', animalRoutes);
 app.use('/api', userRoutes);
 
-app.get ('/test', (req, res) => {
-    res.status(200).send({
-        message: 'mi primer'
-    });
-});
-
 module.exports = app;
