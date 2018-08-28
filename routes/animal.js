@@ -17,5 +17,6 @@ api.post('/animals');
 api.put('/animal/:id', [md_auth.ensureAuth, md_admin.isAdmin], AnimalController.updateAnimal);
 api.delete('/animal/:id', [md_auth.ensureAuth, md_admin.isAdmin], AnimalController.deleteAnimal);
 api.post('/animal-upload-image/:id', [md_upload, md_auth.ensureAuth], AnimalController.uploadImage);
+api.get('/animals-by-user', [md_auth.ensureAuth], AnimalController.getAnimalsByUser);
 
 module.exports = api;

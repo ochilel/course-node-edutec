@@ -10,6 +10,10 @@ var AnimalSchema = Schema({
     origen: {
         country: String,
         state: String
+    },
+    user: {
+        type: Schema.ObjectId,
+        ref: 'User'
     }
 });
 

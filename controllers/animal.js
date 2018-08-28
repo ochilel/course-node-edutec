@@ -3,9 +3,43 @@
 // modulos
 var fs = require('fs');
 var path = require('path');
+var mongoose = require('mongoose');
+
 var constants = require('../utils/constants').constants;
 
 var Animal = require('../models/animal');
+
+function getAnimalsByUser(req,res) {
+    const userId = req.user.sub;
+    console.log(userId);
+    const where = [{
+        $match: {
+            'user': mongoose.Types.ObjectId(userId)
+        }
+    }, {
+        $project:  {
+            name: 1
+        }
+    }]
+    Animal.aggregate(where).exec((err, animals) => {
+        if (err) {
+            res.status(500).send({
+                message: constants.ERROR_IN_REQUEST
+            });
+        } else {
+            if (!animals) {
+                res.status(404).send({
+                    message: constants.EMPTY_ANIMALS
+                });
+            } else {
+                res.status(200).send({
+                    total: `${animals.length}`,
+                    animals
+                });
+            }
+        }
+    })
+}
 
 function getAnimals(req, res) {
     Animal.find({}).exec((err, animals) => {
@@ -20,6 +54,7 @@ function getAnimals(req, res) {
                 });
             } else {
                 res.status(200).send({
+                    total: `${animals.length}`,
                     animals
                 });
             }
@@ -30,7 +65,7 @@ function getAnimals(req, res) {
 function getAnimal(req, res) {
     var animalId = req.params.id;
 
-    Animal.findById(animalId).exec((err, animal) => {
+    Animal.findById(animalId).populate({path: 'user'}).exec((err, animal) => {
         if (err) {
             res.status(500).send({
                 message: constants.ERROR_IN_REQUEST
@@ -59,6 +94,7 @@ function saveAnimal(req, res) {
         animal.origen.country = params.country;
         animal.origen.state = params.state;
         animal.image = null;
+        animal.user = req.user.sub;
 
         animal.save((err, animalStored) => {
             if (err) {
@@ -187,5 +223,6 @@ module.exports = {
     getAnimal,
     updateAnimal,
     deleteAnimal,
-    uploadImage
+    uploadImage,
+    getAnimalsByUser
 }
